@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -31,30 +33,55 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String googleApikey = "GOOGLE MAP API KEY";
+  String googleApikey = "AIzaSyAqUxG9vg5wtPxBhiTkrkCU2XQwaJV6Vcg";
   GoogleMapController? mapController;
+  double? latitude, longitude;
   LatLng startLocation = LatLng(27.6602292, 85.308027);
+  final Set<Marker> markers = {};
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text("Move to New Position of Map"),
+          title: const Text("Move to New Position of Map"),
         ),
         body: GoogleMap(
-          zoomGesturesEnabled: true,
-          initialCameraPosition: CameraPosition(
-            target: startLocation,
-            zoom: 14.0,
-          ),
-          mapType: MapType.normal,
-          onMapCreated: (controller) {
-            setState(() {
-              mapController = controller;
-            });
-          },
-        ),
+            zoomGesturesEnabled: true,
+            initialCameraPosition: CameraPosition(
+              target: startLocation,
+              zoom: 14.0,
+            ),
+            markers: markers,
+            mapType: MapType.normal,
+            onMapCreated: (controller) {
+              setState(() {
+                mapController = controller;
+              });
+            },
+            onTap: (LatLng latLng) {
+              markers.clear();
+
+              latitude = latLng.latitude;
+              longitude = latLng.longitude;
+
+              print('${latitude.toString()}  ${longitude.toString()}');
+              setState(() {
+                markers.add(Marker(
+                  markerId: const MarkerId('id'),
+                  position: LatLng(latitude!, longitude!),
+                  infoWindow: const InfoWindow(
+                    title: 'จุดพิกัด',
+                  ),
+                  icon: BitmapDescriptor.defaultMarker,
+                ));
+              });
+            },
+            gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
+              new Factory<OneSequenceGestureRecognizer>(
+                () => new EagerGestureRecognizer(),
+              ),
+            ].toSet()),
         floatingActionButton: Container(
           margin: EdgeInsets.only(right: 50),
           child: FloatingActionButton(
@@ -63,6 +90,19 @@ class _MyHomePageState extends State<MyHomePage> {
               LatLng newlatlang = LatLng(13.8021001, 100.7392151);
               mapController?.animateCamera(CameraUpdate.newCameraPosition(
                   CameraPosition(target: newlatlang, zoom: 17)));
+
+              setState(() {
+                markers.clear();
+
+                markers.add(Marker(
+                  markerId: const MarkerId('id'),
+                  position: newlatlang,
+                  infoWindow: const InfoWindow(
+                    title: 'จุดพิกัด',
+                  ),
+                  icon: BitmapDescriptor.defaultMarker,
+                ));
+              });
             },
           ),
         ));
